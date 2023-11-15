@@ -6,7 +6,7 @@ A customizable PostgreSQL role for Debian 12. Other distributions are not tested
 Requirements
 ------------
 
-`gather_facts` must be enable to calculate the default memory configuration for PostgreSQL (see Role Variables).
+`gather_facts` must be enabled to calculate the default memory configuration for PostgreSQL (see Role Variables).
 
 Role Variables
 --------------
@@ -20,7 +20,7 @@ postgres_packages:
   - python3-psycopg2
   - libpq-dev
 ```
-Default packages needed for operation of the role. Keep in mind that these are the Debian 12 packages.
+Default packages needed for operation. Keep in mind that these are the Debian 12 packages.
 
 ```yaml
 postgres_daemon: "postgresql"
@@ -39,7 +39,7 @@ postgres_data_dir: "{{ postgres_data_dir_default }}"
 postgres_data_dir_move: false
 ```
 
-Controls wether the data directory should be moved upon first-run. Leave as is to keep the default location.
+Controls weather the data directory should be moved upon first-run. Leave as is, to keep the default location.
 
 _When the data dir is moved, a lock-file is placed in the default location (src) to prevent additional moves on consecutive runs_
 
@@ -58,9 +58,8 @@ Default locales. See all available locales by running `$ locale -a`.
 ```yaml
 postgres_users: []
 ```
- List of users that should be `present` or `absent` in the `pg_hba.conf`. This directive **DOES NOT CREATE USERS**. Leave blank (`[]`) to keep distribution defaults.
+ List of users that should be `present` or `absent` in the `pg_hba.conf`. This directive **DOES NOT CREATE USERS**. Leave blank (`[]`) to keep distribution-defaults.
 
- To remove the Debian 12 defaults and add a new user `admin1` to  `pg_hba.conf` use the following example:
  ```yaml
  postgres_users: 
   - {
@@ -112,6 +111,7 @@ postgres_users: []
     }
 
  ```
+ To remove the Debian 12 defaults and add a new user `admin1` to  `pg_hba.conf` use the following example:
 
 ```yaml
 postgres_conf_port: 5432
@@ -120,7 +120,7 @@ postgres_conf_timezone: "Europe/Berlin"
 ```
 Default port, listening address and timezone.
 
-**DANGER SECTION**
+**DANGER ZONE**
  ```yaml
 postgres_conf_max_connections: 100
 postgres_conf_shared_buffers: "{{ (ansible_memtotal_mb * 0.15) | int | abs }}MB"
@@ -135,7 +135,7 @@ postgres_conf_log_lock_waits: "on"
 postgres_conf_log_temp_files: 0
  ```
 
- These are _my_ suitable defaults. Feel free to change to your liking.
+ These are _my_ suitable defaults. Feel free to change to your requirements.
 
 Dependencies
 ------------
