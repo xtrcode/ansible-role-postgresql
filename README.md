@@ -148,7 +148,7 @@ Example Playbook
 ### Install locally
 ```yaml
 # requirements.yml
-- src: git+ssh://git@github.com:xtrcode/ansible-role-postgresql.git
+- src: git+ssh://git@github.com/xtrcode/ansible-role-postgresql.git
   scm: git
 ```
 
@@ -160,7 +160,7 @@ $ ansible-galaxy install -r requirements.yml -p ./roles
 ```yaml
 - hosts: deploy
   roles:
-    - { role: postgresql }
+    - { role: ansible-role-postgresql }
 ```
 
 License
