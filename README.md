@@ -140,9 +140,7 @@ postgres_conf_log_temp_files: 0
 Dependencies
 ------------
 
-```yaml
-- name: community.postgresql
-```
+None.
 
 Example Playbook
 ----------------
