@@ -1,0 +1,22 @@
+galaxy_info:
+  author: "xtrcode"
+  description: "A customizable PostgreSQL role"
+  license: "license (MIT)"
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Debian
+      versions:
+        - "bookworm"
+
+  galaxy_tags:
+    - database
+    - db
+    - postgres
+    - psql
+    - postgresql
+    - linux
+    - debian
+
+dependencies:
+  - name: community.postgres

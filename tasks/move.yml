@@ -1,0 +1,61 @@
+---
+- name: Ensure postgres is stopped
+  ansible.builtin.service:
+    name: "{{ postgres_daemon }}"
+    state: stopped
+
+- name: Stat source
+  ansible.builtin.stat:
+    path: "{{ postgres_data_dir_default }}"
+  register: src
+
+- name: Check if source exists
+  ansible.builtin.fail:
+    msg: "Postgres source directory ({{ postgres_data_dir_default }}) not present!"
+  when: src.stat.exists is false or src.stat.isdir is false
+
+- name: Stat destination
+  ansible.builtin.stat:
+    path: "{{ postgres_data_dir }}"
+  register: dst
+
+- name: Create destination
+  ansible.builtin.file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: "{{ postgres_user }}"
+    group: "{{ postgres_group }}"
+    mode: "0700"
+  when: dst.stat.exists is false or dst.stat.isdir is false
+
+- name: Move data
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ postgres_data_dir_default }}"
+    dest: "{{ postgres_data_dir }}"
+    owner: "{{ postgres_user }}"
+    group: "{{ postgres_group }}"
+    mode: "0700"
+
+- name: Delete source
+  ansible.builtin.file:
+    path: "{{ postgres_data_dir_default }}"
+    state: absent
+
+- name: Create symlink from source to destination
+  ansible.builtin.file:
+    src: "{{ postgres_data_dir }}"
+    dest: "{{ postgres_data_dir_default[:-1] }}"
+    owner: "{{ postgres_user }}"
+    group: "{{ postgres_group }}"
+    mode: "0700"
+    state: link
+
+- name: Create lock file
+  ansible.builtin.file:
+    path: "{{ postgres_data_dir_lock }}"
+    mode: "0700"
+    state: touch
+  notify:
+    - Restart service
+    - Check reachabillity

@@ -1,0 +1,13 @@
+---
+# handlers file for postgres
+- name: Restart service
+  ansible.builtin.service:
+    name: "{{ postgres_daemon }}"
+    state: restarted
+    sleep: 5
+
+- name: Check reachabillity
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_info:
+    filter: ver*,ext*

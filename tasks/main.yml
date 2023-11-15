@@ -1,0 +1,165 @@
+---
+- name: Check if data directory is specified
+  ansible.builtin.fail:
+    msg: "Postgres data directory not specified"
+  when: postgres_data_dir == ""
+
+- name: Install postgres
+  ansible.builtin.apt:
+    name: "{{ package }}"
+  loop_control:
+    loop_var: package
+  loop: "{{ postgres_packages }}"
+
+- name: Stat lock file
+  ansible.builtin.stat:
+    path: "{{ postgres_data_dir_lock }}"
+  register: lock
+
+- name: Move data directory
+  ansible.builtin.include_tasks: move.yml
+  when: postgres_data_dir_move and postgres_data_dir != postgres_data_dir_default and lock.stat.exists is false
+
+- name: Ensure postgres is started
+  ansible.builtin.service:
+    name: "{{ postgres_daemon }}"
+    state: started
+
+- name: Ensure all configured locales are present.
+  community.general.locale_gen:
+    name: "{{ locales }}"
+    state: present
+  with_items: "{{ postgres_locales }}"
+  loop_control:
+    loop_var: locales
+
+- name: Set listen_addresses
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: listen_addresses
+    value: "{{ postgres_conf_listen_addresses }}"
+  notify:
+    - Restart service
+    - Check reachabillity
+
+- name: Force handler execution
+  ansible.builtin.meta: flush_handlers
+
+- name: Set port
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: port
+    value: "{{ postgres_conf_port }}"
+  notify:
+    - Restart service
+    - Check reachabillity
+
+- name: Force handler execution
+  ansible.builtin.meta: flush_handlers
+
+- name: Set max_connections
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: max_connections
+    value: "{{ postgres_conf_max_connections }}"
+
+- name: Set shared_buffers
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: shared_buffers
+    value: "{{ postgres_conf_shared_buffers }}"
+
+- name: Set work_mem
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: work_mem
+    value: "{{ postgres_conf_work_mem }}"
+
+- name: Set maintenance_work_mem
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: maintenance_work_mem
+    value: "{{ postgres_conf_maintenance_work_mem }}"
+
+- name: Set effective_cache_size
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: effective_cache_size
+    value: "{{ postgres_conf_effective_cache_size }}"
+
+- name: Set autovacuum logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_autovacuum_min_duration
+    value: "{{ postgres_conf_log_autovacuum_min_duration }}"
+
+- name: Set checkpoint logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_checkpoints
+    value: "{{ postgres_conf_log_checkpoints }}"
+
+- name: Set connections logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_connections
+    value: "{{ postgres_conf_log_connections }}"
+
+- name: Set disconnect logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_disconnections
+    value: "{{ postgres_conf_log_disconnections }}"
+
+- name: Set lock wait logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_lock_waits
+    value: "{{ postgres_conf_log_lock_waits }}"
+
+- name: Set temp file logging
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: log_temp_files
+    value: "{{ postgres_conf_log_temp_files }}"
+
+- name: Set timezone
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_set:
+    name: TimeZone
+    value: "{{ postgres_conf_timezone }}"
+
+- name: Add users
+  become: true
+  become_user: "{{ postgres_user }}"
+  community.postgresql.postgresql_pg_hba:
+    dest: "{{ postgres_pg_hba }}"
+    contype: "{{ user.contype }}"
+    users: "{{ user.users }}"
+    databases: "{{ user.databases }}"
+    method: "{{ user.method }}"
+    source: "{{ user.source }}"
+    state: "{{ user.state | default('present') }}"
+  loop: "{{ postgres_users }}"
+  loop_control:
+    loop_var: user
+
+- name: Restart and check reachabillity
+  ansible.builtin.command: /bin/true
+  notify:
+    - Restart service
+    - Check reachabillity

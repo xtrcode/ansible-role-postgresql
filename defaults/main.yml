@@ -1,0 +1,43 @@
+---
+# defaults for postgres
+postgres_packages:
+  - postgresql
+  - postgresql-common
+  - python3-psycopg2
+  - libpq-dev
+
+postgres_daemon: "postgresql"
+postgres_user: "postgres"
+postgres_group: "postgres"
+postgres_version: 15
+postgres_cluster: "main"
+postgres_data_dir_root: "/var/lib/postgresql/"
+postgres_data_dir_lock: "{{ postgres_data_dir_root }}.ansible_postgres_moved"
+postgres_data_dir_default: "{{ postgres_data_dir_root }}{{ postgres_version }}/{{ postgres_cluster }}/"
+postgres_data_dir: "{{ postgres_data_dir_default }}"
+postgres_data_dir_move: false
+
+postgres_auth_method: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"
+postgres_locales:
+  - "en_US.UTF-8"
+  - "de_DE.UTF-8"
+
+# pg_hba
+postgres_pg_hba: "/etc/postgresql/{{ postgres_version }}/{{ postgres_cluster }}//pg_hba.conf"
+postgres_users: []
+
+# conf
+postgres_conf_port: 5432
+postgres_conf_listen_addresses: "0.0.0.0"
+postgres_conf_timezone: "Europe/Berlin"
+postgres_conf_max_connections: 100
+postgres_conf_shared_buffers: "{{ (ansible_memtotal_mb * 0.15) | int | abs }}MB"
+postgres_conf_work_mem: "{{ (ansible_memtotal_mb * 0.25) / (postgres_conf_max_connections | int) | int | abs }}MB"
+postgres_conf_maintenance_work_mem: "{{ (ansible_memtotal_mb * 0.05) | int | abs }}MB"
+postgres_conf_effective_cache_size: "{{ (ansible_memtotal_mb * 0.5) | int | abs }}MB"
+postgres_conf_log_autovacuum_min_duration: 0
+postgres_conf_log_checkpoints: "on"
+postgres_conf_log_connections: "on"
+postgres_conf_log_disconnections: "on"
+postgres_conf_log_lock_waits: "on"
+postgres_conf_log_temp_files: 0
