@@ -1,7 +1,7 @@
 Role Name
 =========
 
-A customizable PostgreSQL role for Debian 12. Other distributions are not tested.
+A customizable PostgreSQL role for Debian 12-13. Other distributions are not tested.
 
 Requirements
 ------------
